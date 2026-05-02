@@ -1,4 +1,4 @@
-import { BarChart3, Download } from 'lucide-react'
+import { BarChart3, Download, Clock, CheckCircle2 } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 
 const reports = [
@@ -14,31 +14,40 @@ export default function Reports() {
     <div>
       <PageHeader title="Reports" description="Generate and download property reports" />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="glass-card neon-glow p-6 flex items-center justify-between">
-          <div><p className="text-2xl font-bold text-white">12</p><p className="text-sm text-white/40">Reports Generated</p></div>
-          <BarChart3 size={24} className="text-[#00d4ff]" />
+        <div className="glass-card neon-glow p-6 flex items-center justify-between card-enter stagger-1">
+          <div><p className="text-2xl font-bold text-white animate-number">12</p><p className="text-sm text-white/40 mt-1">Reports Generated</p></div>
+          <div className="p-3 rounded-xl bg-[#00d4ff]/10 border border-[#00d4ff]/10"><BarChart3 size={22} className="text-[#00d4ff]" /></div>
         </div>
-        <div className="glass-card neon-glow p-6 flex items-center justify-between">
-          <div><p className="text-2xl font-bold text-white">3</p><p className="text-sm text-white/40">Scheduled</p></div>
-          <BarChart3 size={24} className="text-[#a855f7]" />
+        <div className="glass-card neon-glow p-6 flex items-center justify-between card-enter stagger-2">
+          <div><p className="text-2xl font-bold text-white animate-number">3</p><p className="text-sm text-white/40 mt-1">Scheduled</p></div>
+          <div className="p-3 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/10"><Clock size={22} className="text-[#a855f7]" /></div>
         </div>
-        <div className="glass-card neon-glow p-6 flex items-center justify-between">
-          <div><p className="text-2xl font-bold text-white">Weekly</p><p className="text-sm text-white/40">Auto-generation</p></div>
-          <BarChart3 size={24} className="text-green-400" />
+        <div className="glass-card neon-glow p-6 flex items-center justify-between card-enter stagger-3">
+          <div><p className="text-2xl font-bold text-white animate-number">Weekly</p><p className="text-sm text-white/40 mt-1">Auto-generation</p></div>
+          <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/10"><CheckCircle2 size={22} className="text-green-400" /></div>
         </div>
       </div>
-      <div className="glass-card neon-glow overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/5"><h3 className="text-lg font-semibold text-white">Available Reports</h3></div>
-        <div className="divide-y divide-white/5">
+      <div className="glass-card neon-glow overflow-hidden card-enter stagger-3">
+        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-white">Available Reports</h3>
+          <span className="text-xs text-white/30 bg-white/5 px-2.5 py-1 rounded-full">{reports.length} reports</span>
+        </div>
+        <div className="divide-y divide-white/[0.03]">
           {reports.map((report, i) => (
-            <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+            <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.03] transition-all duration-200 even:bg-white/[0.01]">
               <div>
-                <p className="text-sm text-white/80">{report.name}</p>
-                <p className="text-xs text-white/40">{report.period} • Generated: {report.generated}</p>
+                <p className="text-sm text-white/80 font-medium">{report.name}</p>
+                <p className="text-xs text-white/30 mt-0.5">{report.period} • Generated: {report.generated}</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`text-xs px-2 py-1 rounded-full ${report.status === 'Ready' ? 'bg-green-500/10 text-green-400' : report.status === 'Processing' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-white/5 text-white/40'}`}>{report.status}</span>
-                {report.status === 'Ready' && <button className="p-2 hover:bg-white/5 rounded-lg transition-colors"><Download size={16} className="text-[#00d4ff]" /></button>}
+                <span className={`badge ${
+                  report.status === 'Ready' ? 'badge-completed' : report.status === 'Processing' ? 'badge-pending' : 'badge-scheduled'
+                }`}>{report.status}</span>
+                {report.status === 'Ready' && (
+                  <button className="p-2 hover:bg-[#00d4ff]/10 rounded-lg transition-colors border border-transparent hover:border-[#00d4ff]/20">
+                    <Download size={15} className="text-[#00d4ff]" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

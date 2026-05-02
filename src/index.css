@@ -15,16 +15,121 @@ body {
 }
 
 .glass-card {
-  background: var(--bg-card);
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
   border: 1px solid var(--border-glass);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
   border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 212, 255, 0.15);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
 }
 
 .neon-glow {
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.1), 0 0 40px rgba(0, 212, 255, 0.05);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.06), 0 0 40px rgba(0, 212, 255, 0.03);
 }
 
 .neon-text {
   text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Page transitions */
+.page-enter {
+  animation: pageIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Staggered card animations */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 60ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 180ms; }
+
+.card-enter {
+  animation: cardIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.badge-active { background: rgba(34,197,94,0.1); color: #4ade80; }
+.badge-active::before { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+
+.badge-pending, .badge-vacant, .badge-maintenance { background: rgba(250,204,21,0.1); color: #facc15; }
+.badge-pending::before, .badge-vacant::before, .badge-maintenance::before { background: #facc15; box-shadow: 0 0 6px #facc15; }
+
+.badge-inactive, .badge-critical, .badge-overdue { background: rgba(239,68,68,0.1); color: #f87171; }
+.badge-inactive::before, .badge-critical::before, .badge-overdue::before { background: #f87171; box-shadow: 0 0 6px #f87171; }
+
+.badge-scheduled, .badge-in-progress { background: rgba(0,212,255,0.1); color: #00d4ff; }
+.badge-scheduled::before, .badge-in-progress::before { background: #00d4ff; box-shadow: 0 0 6px #00d4ff; }
+
+.badge-completed, .badge-paid, .badge-received { background: rgba(34,197,94,0.1); color: #4ade80; }
+.badge-completed::before, .badge-paid::before, .badge-received::before { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+
+/* Button hover */
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* Number animation */
+.animate-number {
+  display: inline-block;
+  animation: numberPop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes numberPop {
+  from { opacity: 0; transform: scale(0.8); }
+  50% { transform: scale(1.05); }
+  to { opacity: 1; transform: scale(1); }
 }
