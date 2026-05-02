@@ -2,9 +2,11 @@ import { Users, Plus } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import StatCard from '../components/StatCard'
 import DataTable from '../components/DataTable'
-import { tenants } from '../lib/data'
+import { useQuery } from '../hooks/useSupabase'
 
 export default function Tenants() {
+  const { data: tenants, loading } = useQuery<any>('tenants', { order: { column: 'created_at' } })
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -13,24 +15,17 @@ export default function Tenants() {
           <Plus size={16} /> Add Tenant
         </button>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard icon={Users} title="Active Tenants" value={138} trend="up" change="+12" />
-        <StatCard icon={Users} title="Lease Renewals Due" value={8} />
-        <StatCard icon={Users} title="Avg. Tenant Rating" value="4.6/5" />
+        <StatCard icon={Users} title="Active Tenants" value={tenants.filter(t => t.status === 'Active').length} trend="up" change="+12" />
+        <StatCard icon={Users} title="Corporate" value={tenants.filter(t => t.type === 'Corporate').length} />
+        <StatCard icon={Users} title="Individual" value={tenants.filter(t => t.type === 'Individual').length} />
       </div>
-
-      <DataTable
-        title="All Tenants"
-        columns={[
-          { key: 'name', label: 'Tenant' },
-          { key: 'property', label: 'Property' },
-          { key: 'unit', label: 'Unit' },
-          { key: 'rent', label: 'Rent' },
-          { key: 'status', label: 'Status' },
-        ]}
-        data={tenants}
-      />
+      {loading ? <p className="text-white/40">Loading...</p> : (
+        <DataTable title="All Tenants" columns={[
+          { key: 'name', label: 'Name' }, { key: 'type', label: 'Type' },
+          { key: 'email', label: 'Email' }, { key: 'phone', label: 'Phone' }, { key: 'status', label: 'Status' },
+        ]} data={tenants} />
+      )}
     </div>
   )
 }
