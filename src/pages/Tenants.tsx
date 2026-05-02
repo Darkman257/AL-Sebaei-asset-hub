@@ -2,10 +2,11 @@ import { Users, Plus } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import StatCard from '../components/StatCard'
 import DataTable from '../components/DataTable'
+import ErrorState from '../components/ErrorState'
 import { useQuery } from '../hooks/useSupabase'
 
 export default function Tenants() {
-  const { data: tenants, loading } = useQuery<any>('tenants', { order: { column: 'created_at' } })
+  const { data: tenants, loading, error } = useQuery<any>('tenants', { order: { column: 'created_at' } })
 
   return (
     <div>
@@ -16,11 +17,11 @@ export default function Tenants() {
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard icon={Users} title="Active Tenants" value={tenants.filter(t => t.status === 'Active').length} trend="up" change="+12" />
-        <StatCard icon={Users} title="Corporate" value={tenants.filter(t => t.type === 'Corporate').length} />
-        <StatCard icon={Users} title="Individual" value={tenants.filter(t => t.type === 'Individual').length} />
+        <StatCard icon={Users} title="Active Tenants" value={tenants.filter((t: any) => t.status === 'Active').length} trend="up" change="+12" />
+        <StatCard icon={Users} title="Corporate" value={tenants.filter((t: any) => t.type === 'Corporate').length} />
+        <StatCard icon={Users} title="Individual" value={tenants.filter((t: any) => t.type === 'Individual').length} />
       </div>
-      {loading ? <p className="text-white/40">Loading...</p> : (
+      {error ? <ErrorState message={error} /> : loading ? <p className="text-white/40">Loading...</p> : (
         <DataTable title="All Tenants" columns={[
           { key: 'name', label: 'Name' }, { key: 'type', label: 'Type' },
           { key: 'email', label: 'Email' }, { key: 'phone', label: 'Phone' }, { key: 'status', label: 'Status' },

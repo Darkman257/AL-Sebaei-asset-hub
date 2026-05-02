@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# AL-Sebaei Asset Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Production-ready real estate asset management dashboard.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React + TypeScript + Vite
+- Tailwind CSS (dark cyberpunk theme)
+- Supabase (PostgreSQL backend)
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/Darkman257/AL-Sebaei-asset-hub.git
+cd AL-Sebaei-asset-hub
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Environment Variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Copy `.env.example` to `.env` and fill in your Supabase credentials:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
+```
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon/public key |
+
+## Run Locally
+
+```bash
+npm run dev
+```
+
+Opens at `http://localhost:5173`
+
+## Build
+
+```bash
+npm run build
+```
+
+Output goes to `dist/`.
+
+## Deploy to Vercel
+
+1. Push to GitHub
+2. Import repo in [vercel.com](https://vercel.com)
+3. Add environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
+4. Deploy — Vercel auto-detects Vite
+
+Or via CLI:
+
+```bash
+npx vercel --prod
 ```

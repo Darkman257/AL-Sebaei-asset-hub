@@ -9,17 +9,23 @@ export function useQuery<T>(table: string, options?: { select?: string; order?: 
   useEffect(() => {
     async function fetch() {
       setLoading(true)
-      let query = supabase.from(table).select(options?.select || '*')
-      if (options?.order) {
-        query = query.order(options.order.column, { ascending: options.order.ascending ?? false })
+      setError(null)
+      try {
+        let query = supabase.from(table).select(options?.select || '*')
+        if (options?.order) {
+          query = query.order(options.order.column, { ascending: options.order.ascending ?? false })
+        }
+        if (options?.limit) {
+          query = query.limit(options.limit)
+        }
+        const { data, error } = await query
+        if (error) throw new Error(error.message)
+        setData(data as T[])
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch data')
+      } finally {
+        setLoading(false)
       }
-      if (options?.limit) {
-        query = query.limit(options.limit)
-      }
-      const { data, error } = await query
-      if (error) setError(error.message)
-      else setData(data as T[])
-      setLoading(false)
     }
     fetch()
   }, [table])
