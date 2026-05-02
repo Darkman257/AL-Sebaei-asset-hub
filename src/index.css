@@ -133,3 +133,22 @@ button:active {
   50% { transform: scale(1.05); }
   to { opacity: 1; transform: scale(1); }
 }
+
+/* Pulse glow for KPI cards */
+.pulse-glow-blue { animation: pulseGlow 3s ease-in-out infinite; }
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.05); }
+  50% { box-shadow: 0 0 25px rgba(0, 212, 255, 0.12); }
+}
+
+.pulse-glow-green { animation: pulseGlowGreen 3s ease-in-out infinite; }
+@keyframes pulseGlowGreen {
+  0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.05); }
+  50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.12); }
+}
+
+.pulse-glow-red { animation: pulseGlowRed 3s ease-in-out infinite; }
+@keyframes pulseGlowRed {
+  0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.05); }
+  50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.12); }
+}
