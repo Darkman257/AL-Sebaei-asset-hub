@@ -64,9 +64,9 @@ export default function Dashboard() {
 
   const insights = [
     { icon: Building2, text: `${stats.properties} active properties with ${stats.totalUnits} total units under management`, type: 'info' as const },
-    { icon: TrendingUp, text: `Potential monthly revenue: SAR ${(stats.potentialRev/1000).toFixed(0)}K at full occupancy`, type: 'success' as const },
-    { icon: AlertTriangle, text: `${stats.vacant} vacant units → SAR ${(stats.lostRev/1000).toFixed(0)}K/mo lost revenue opportunity`, type: stats.vacant > 2 ? 'danger' as const : 'warning' as const },
-    { icon: DollarSign, text: `Net position: SAR ${((stats.revenue - stats.expenses)/1000).toFixed(0)}K (Revenue minus Expenses)`, type: stats.revenue > stats.expenses ? 'success' as const : 'danger' as const },
+    { icon: TrendingUp, text: `Potential monthly revenue: EGP ${(stats.potentialRev/1000).toFixed(0)}K at full occupancy`, type: 'success' as const },
+    { icon: AlertTriangle, text: `${stats.vacant} vacant units → EGP ${(stats.lostRev/1000).toFixed(0)}K/mo lost revenue opportunity`, type: stats.vacant > 2 ? 'danger' as const : 'warning' as const },
+    { icon: DollarSign, text: `Net position: EGP ${((stats.revenue - stats.expenses)/1000).toFixed(0)}K (Revenue minus Expenses)`, type: stats.revenue > stats.expenses ? 'success' as const : 'danger' as const },
   ]
 
   return (
@@ -86,8 +86,8 @@ export default function Dashboard() {
           { label: 'Total Units', value: stats.totalUnits, color: 'blue', pulse: false },
           { label: 'Occupied', value: stats.occupied, color: 'green', pulse: true },
           { label: 'Vacant', value: stats.vacant, color: stats.vacant > 2 ? 'red' : 'yellow', pulse: stats.vacant > 2 },
-          { label: 'Revenue', value: stats.revenue, prefix: 'SAR ', format: 'short', color: 'green', pulse: false },
-          { label: 'Expenses', value: stats.expenses, prefix: 'SAR ', format: 'short', color: 'red', pulse: false },
+          { label: 'Revenue', value: stats.revenue, prefix: 'EGP ', format: 'short', color: 'green', pulse: false },
+          { label: 'Expenses', value: stats.expenses, prefix: 'EGP ', format: 'short', color: 'red', pulse: false },
         ].map((kpi, i) => {
           const glowMap: Record<string, string> = {
             blue: 'border-[#00d4ff]/20 shadow-[0_0_20px_rgba(0,212,255,0.08)]',

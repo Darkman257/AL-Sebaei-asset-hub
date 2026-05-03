@@ -31,9 +31,9 @@ export default function Expenses() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <StatCard icon={Receipt} title="Total" value={`SAR ${(total/1000).toFixed(0)}K`} delay={0} />
-            <StatCard icon={Receipt} title="Paid" value={`SAR ${(paid/1000).toFixed(0)}K`} delay={1} />
-            <StatCard icon={Receipt} title="Pending" value={`SAR ${(pending/1000).toFixed(0)}K`} delay={2} />
+            <StatCard icon={Receipt} title="Total" value={`EGP ${(total/1000).toFixed(0)}K`} delay={0} />
+            <StatCard icon={Receipt} title="Paid" value={`EGP ${(paid/1000).toFixed(0)}K`} delay={1} />
+            <StatCard icon={Receipt} title="Pending" value={`EGP ${(pending/1000).toFixed(0)}K`} delay={2} />
             <StatCard icon={Receipt} title="Categories" value={new Set(expenses.map(e => e.category)).size} delay={3} />
           </div>
           <DataTable title="All Expenses" columns={[
@@ -43,7 +43,7 @@ export default function Expenses() {
           ]} data={expenses.map(e => ({
             category: e.category, description: e.description,
             property: e.properties?.name || 'All Properties',
-            amount: `SAR ${Number(e.amount).toLocaleString()}`, date: e.date, status: e.status,
+            amount: `EGP ${Number(e.amount).toLocaleString()}`, date: e.date, status: e.status,
           }))} />
         </>
       )}

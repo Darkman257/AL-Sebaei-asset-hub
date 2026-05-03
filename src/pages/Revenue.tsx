@@ -32,9 +32,9 @@ export default function Revenue() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <StatCard icon={TrendingUp} title="Total Revenue" value={`SAR ${(total/1000000).toFixed(2)}M`} trend="up" change="+8.5%" delay={0} />
-            <StatCard icon={TrendingUp} title="Rental Income" value={`SAR ${(rental/1000000).toFixed(2)}M`} delay={1} />
-            <StatCard icon={TrendingUp} title="Services" value={`SAR ${(services/1000).toFixed(0)}K`} delay={2} />
+            <StatCard icon={TrendingUp} title="Total Revenue" value={`EGP ${(total/1000000).toFixed(2)}M`} trend="up" change="+8.5%" delay={0} />
+            <StatCard icon={TrendingUp} title="Rental Income" value={`EGP ${(rental/1000000).toFixed(2)}M`} delay={1} />
+            <StatCard icon={TrendingUp} title="Services" value={`EGP ${(services/1000).toFixed(0)}K`} delay={2} />
             <StatCard icon={TrendingUp} title="Collection Rate" value={`${total > 0 ? ((received/total)*100).toFixed(1) : 0}%`} delay={3} />
           </div>
           <DataTable title="Revenue Records" columns={[
@@ -42,7 +42,7 @@ export default function Revenue() {
             { key: 'amount', label: 'Amount' }, { key: 'date', label: 'Date' }, { key: 'status', label: 'Status' },
           ]} data={revenue.map(r => ({
             property: r.properties?.name || '—', type: r.type,
-            amount: `SAR ${Number(r.amount).toLocaleString()}`, date: r.date, status: r.status,
+            amount: `EGP ${Number(r.amount).toLocaleString()}`, date: r.date, status: r.status,
           }))} />
         </>
       )}

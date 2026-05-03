@@ -10,7 +10,7 @@ export default function Settings() {
           <div className="space-y-1">
             {[
               { label: 'Company Name', desc: 'Displayed in reports and documents', type: 'input', value: 'AL-Sebaei Group' },
-              { label: 'Currency', desc: 'Default currency for all transactions', type: 'select', options: ['SAR - Saudi Riyal', 'USD - US Dollar', 'AED - UAE Dirham'] },
+              { label: 'Currency', desc: 'Default currency for all transactions', type: 'select', options: ['EGP - Egyptian Pound', 'EGP - Saudi Riyal', 'USD - US Dollar'] },
               { label: 'Language', desc: 'Interface language', type: 'select', options: ['English', 'العربية'] },
             ].map((item, i) => (
               <div key={i} className="flex items-center justify-between py-4 border-b border-white/[0.04] last:border-0">

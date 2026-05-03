@@ -59,7 +59,7 @@ export default function Assets() {
               <div>
                 <p className="text-[11px] text-white/30 uppercase tracking-wider mb-1">Estimated Annual Portfolio Value</p>
                 <p className="text-3xl font-bold text-green-400">
-                  <AnimatedNumber value={totalValue} prefix="SAR " decimals={0} />
+                  <AnimatedNumber value={totalValue} prefix="EGP " decimals={0} />
                 </p>
               </div>
               <div className="flex gap-6">
