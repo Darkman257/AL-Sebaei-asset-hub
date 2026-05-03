@@ -3,3 +3,6 @@ dist
 .DS_Store
 *.local
 .env
+.Trash/
+.env
+.DS_Store
