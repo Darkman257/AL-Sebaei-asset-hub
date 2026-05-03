@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Plus, Upload } from 'lucide-react'
+import { Plus, Upload, Download } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import AnimatedNumber from '../components/AnimatedNumber'
-import MiniProgress from '../components/MiniProgress'
 import ErrorState from '../components/ErrorState'
 import CSVImport from '../components/CSVImport'
-import { SkeletonCard, SkeletonTable } from '../components/Skeleton'
+import AssetCard from '../components/AssetCard'
+import AssetEditModal from '../components/AssetEditModal'
+import { SkeletonCard } from '../components/Skeleton'
 import { supabase } from '../lib/supabase'
 
 export default function Assets() {
@@ -14,6 +15,7 @@ export default function Assets() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showImport, setShowImport] = useState(false)
+  const [editingAsset, setEditingAsset] = useState<any | null>(null)
 
   const fetchData = async () => {
     setLoading(true)
@@ -28,9 +30,32 @@ export default function Assets() {
 
   useEffect(() => { fetchData() }, [])
 
+  const handleExport = () => {
+    const headers = ['name', 'type', 'address', 'city', 'total_units', 'status', 'notes', 'estimated_value', 'monthly_rent']
+    const rows = properties.length > 0 ? properties.map(p => 
+      headers.map(h => {
+        const val = p[h]
+        if (val === null || val === undefined) return ''
+        if (typeof val === 'string' && val.includes(',')) return `"${val}"`
+        return val
+      }).join(',')
+    ) : []
+    
+    const csvContent = [headers.join(','), ...rows].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `properties_export_${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   if (error) return <><PageHeader title="Properties & Assets" /><ErrorState message={error} /></>
 
-  const totalValue = units.reduce((s, u) => s + Number(u.monthly_rent || 0), 0) * 12
+  const totalValue = properties.reduce((s, p) => s + Number(p.estimated_value || 0), 0) || units.reduce((s, u) => s + Number(u.monthly_rent || 0), 0) * 12
   const occupiedUnits = units.filter(u => u.status === 'Occupied').length
   const vacantUnits = units.filter(u => u.status === 'Vacant').length
 
@@ -39,6 +64,9 @@ export default function Assets() {
       <div className="flex items-center justify-between mb-8">
         <PageHeader title="Properties & Assets" description="Manage your real estate portfolio" />
         <div className="flex gap-3">
+          <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2.5 bg-white/5 text-white/80 rounded-xl hover:bg-white/10 border border-white/10 transition-colors">
+            <Download size={16} /> Export CSV Template
+          </button>
           <button onClick={() => setShowImport(true)} className="flex items-center gap-2 px-4 py-2.5 bg-[#a855f7]/10 text-[#a855f7] rounded-xl hover:bg-[#a855f7]/20 border border-[#a855f7]/20 transition-colors">
             <Upload size={16} /> Import CSV
           </button>
@@ -49,7 +77,7 @@ export default function Assets() {
       </div>
 
       {loading ? (
-        <><div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">{[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}</div><SkeletonTable /></>
+        <><div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">{[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}</div><div className="grid grid-cols-1 lg:grid-cols-2 gap-6">{[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}</div></>
       ) : (
         <>
           {/* Portfolio Value Header */}
@@ -79,40 +107,41 @@ export default function Assets() {
             </div>
           </div>
 
-          {/* Property Cards with Progress */}
-          <div className="glass-card neon-glow overflow-hidden mb-6 card-enter stagger-2">
-            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Properties</h3>
-              <span className="text-xs text-white/30 bg-white/5 px-2.5 py-1 rounded-full">{properties.length} properties</span>
-            </div>
-            <div className="divide-y divide-white/[0.03]">
-              {properties.map((p, i) => {
-                const propUnits = units.filter(u => u.property_id === p.id)
-                const propOccupied = propUnits.filter(u => u.status === 'Occupied').length
-                const propTotal = propUnits.length || p.total_units
-                const color = propTotal === 0 ? 'yellow' : (propOccupied / propTotal) >= 0.8 ? 'green' : (propOccupied / propTotal) >= 0.5 ? 'yellow' : 'red'
-                
-                return (
-                  <div key={i} className="px-6 py-4 flex items-center gap-6 hover:bg-white/[0.02] transition-all even:bg-white/[0.01]">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white/80 font-medium">{p.name}</p>
-                      <p className="text-[11px] text-white/30 mt-0.5">{p.type} • {p.city}</p>
-                    </div>
-                    <div className="w-48">
-                      <MiniProgress value={propOccupied} max={propTotal} color={color} />
-                    </div>
-                    <div className="text-right w-24">
-                      <p className="text-xs text-white/60">{propOccupied}/{propTotal} units</p>
-                    </div>
-                    <span className={`badge badge-${p.status.toLowerCase()}`}>{p.status}</span>
-                  </div>
-                )
-              })}
-            </div>
+          <div className="flex items-center justify-between mb-4 mt-8">
+            <h3 className="text-lg font-semibold text-white tracking-wide">Asset Control Panel</h3>
+            <span className="text-xs text-[#00d4ff] bg-[#00d4ff]/10 px-3 py-1.5 rounded-full font-medium border border-[#00d4ff]/20">
+              {properties.length} Active Assets
+            </span>
+          </div>
+
+          {/* Property Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 card-enter stagger-2">
+            {properties.map((p, i) => {
+              const propUnits = units.filter(u => u.property_id === p.id)
+              const propOccupied = propUnits.filter(u => u.status === 'Occupied').length
+              const propTotal = propUnits.length || p.total_units
+              
+              return (
+                <AssetCard 
+                  key={i} 
+                  property={p} 
+                  occupied={propOccupied} 
+                  total={propTotal} 
+                  onEdit={(prop) => setEditingAsset(prop)} 
+                />
+              )
+            })}
           </div>
         </>
       )}
       {showImport && <CSVImport onClose={() => setShowImport(false)} onSuccess={fetchData} />}
+      {editingAsset && (
+        <AssetEditModal 
+          property={editingAsset} 
+          onClose={() => setEditingAsset(null)} 
+          onSuccess={() => { setEditingAsset(null); fetchData() }} 
+        />
+      )}
     </div>
   )
 }

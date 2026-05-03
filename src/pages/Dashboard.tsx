@@ -16,7 +16,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const [propRes, unitRes, tenantRes, revRes, expRes, maintRes] = await Promise.all([
-        supabase.from('properties').select('id, total_units', { count: 'exact' }),
+        supabase.from('properties').select('id, total_units, estimated_value, monthly_rent'),
         supabase.from('units').select('id, status, monthly_rent'),
         supabase.from('tenants').select('id', { count: 'exact', head: true }).eq('status', 'Active'),
         supabase.from('revenue').select('amount').eq('status', 'Received'),
@@ -24,6 +24,9 @@ export default function Dashboard() {
         supabase.from('maintenance_requests').select('id, issue, priority, status').limit(4),
       ])
       
+      const propertiesData = propRes.data || []
+      const portfolioValue = propertiesData.reduce((s, p) => s + Number(p.estimated_value || 0), 0)
+
       const units = unitRes.data || []
       const occupied = units.filter(u => u.status === 'Occupied').length
       const vacant = units.filter(u => u.status === 'Vacant').length
@@ -34,7 +37,8 @@ export default function Dashboard() {
       const totalExp = expRes.data?.reduce((sum, e) => sum + Number(e.amount), 0) || 0
 
       setStats({
-        properties: propRes.count || 0,
+        properties: propertiesData.length,
+        portfolioValue,
         totalUnits,
         occupied,
         vacant,
@@ -63,7 +67,7 @@ export default function Dashboard() {
   const occupancyPct = stats.totalUnits > 0 ? (stats.occupied / stats.totalUnits) * 100 : 0
 
   const insights = [
-    { icon: Building2, text: `${stats.properties} active properties with ${stats.totalUnits} total units under management`, type: 'info' as const },
+    { icon: Building2, text: `Total portfolio value: EGP ${Number(stats.portfolioValue || 0).toLocaleString()} across ${stats.properties} active properties`, type: 'info' as const },
     { icon: TrendingUp, text: `Potential monthly revenue: EGP ${(stats.potentialRev/1000).toFixed(0)}K at full occupancy`, type: 'success' as const },
     { icon: AlertTriangle, text: `${stats.vacant} vacant units → EGP ${(stats.lostRev/1000).toFixed(0)}K/mo lost revenue opportunity`, type: stats.vacant > 2 ? 'danger' as const : 'warning' as const },
     { icon: DollarSign, text: `Net position: EGP ${((stats.revenue - stats.expenses)/1000).toFixed(0)}K (Revenue minus Expenses)`, type: stats.revenue > stats.expenses ? 'success' as const : 'danger' as const },
