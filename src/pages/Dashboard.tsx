@@ -15,41 +15,117 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function load() {
-      const [propRes, unitRes, tenantRes, revRes, expRes, maintRes] = await Promise.all([
-        supabase.from('properties').select('id, total_units, estimated_value, monthly_rent'),
-        supabase.from('units').select('id, status, monthly_rent'),
-        supabase.from('tenants').select('id', { count: 'exact', head: true }).eq('status', 'Active'),
-        supabase.from('revenue').select('amount').eq('status', 'Received'),
-        supabase.from('expenses').select('amount'),
-        supabase.from('maintenance_requests').select('id, issue, priority, status').limit(4),
-      ])
-      
-      const propertiesData = propRes.data || []
-      const portfolioValue = propertiesData.reduce((s, p) => s + Number(p.estimated_value || 0), 0)
+      try {
+        const [propRes, unitRes, tenantRes, revRes, expRes, maintRes, leaseRes] = await Promise.all([
+          supabase.from('properties').select('id, estimated_value'),
+          supabase.from('units').select('id, status, monthly_rent'),
+          supabase.from('tenants').select('id', { count: 'exact', head: true }).eq('status', 'Active'),
+          supabase.from('revenue').select('amount, date, status'),
+          supabase.from('expenses').select('amount, date, status'),
+          supabase.from('maintenance_requests').select('id, issue, priority, status'),
+          supabase.from('leases').select('id, end_date, status'),
+        ])
+        
+        const propertiesData = propRes.data || []
+        const portfolioValue = propertiesData.reduce((s, p) => s + Number(p.estimated_value || 0), 0)
 
-      const units = unitRes.data || []
-      const occupied = units.filter(u => u.status === 'Occupied').length
-      const vacant = units.filter(u => u.status === 'Vacant').length
-      const totalUnits = units.length
-      const potentialRev = units.reduce((s, u) => s + Number(u.monthly_rent || 0), 0)
-      const lostRev = units.filter(u => u.status === 'Vacant').reduce((s, u) => s + Number(u.monthly_rent || 0), 0)
-      const totalRev = revRes.data?.reduce((sum, r) => sum + Number(r.amount), 0) || 0
-      const totalExp = expRes.data?.reduce((sum, e) => sum + Number(e.amount), 0) || 0
+        const units = unitRes.data || []
+        const occupied = units.filter(u => u.status === 'Occupied').length
+        const vacant = units.filter(u => u.status === 'Vacant').length
+        const totalUnits = units.length
+        const potentialRev = units.reduce((s, u) => s + Number(u.monthly_rent || 0), 0)
+        const lostRev = units.filter(u => u.status === 'Vacant').reduce((s, u) => s + Number(u.monthly_rent || 0), 0)
+        
+        const revData = revRes.data || []
+        const expData = expRes.data || []
+        
+        const totalRev = revData.filter(r => r.status === 'Received').reduce((sum, r) => sum + Number(r.amount || 0), 0)
+        const totalExp = expData.reduce((sum, e) => sum + Number(e.amount || 0), 0)
+        
+        // Generate stable 6-month dynamic axis
+        const months: any[] = []
+        const currentDate = new Date()
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1)
+          months.push({
+            label: d.toLocaleString('en-US', { month: 'short' }),
+            year: d.getFullYear(),
+            monthIndex: d.getMonth(),
+            rev: 0,
+            exp: 0
+          })
+        }
+        
+        revData.forEach(r => {
+          if (!r.date || !r.amount || r.status !== 'Received') return
+          const rDate = new Date(r.date)
+          const target = months.find(m => m.year === rDate.getFullYear() && m.monthIndex === rDate.getMonth())
+          if (target) target.rev += Number(r.amount)
+        })
+        
+        expData.forEach(e => {
+          if (!e.date || !e.amount) return
+          const eDate = new Date(e.date)
+          const target = months.find(m => m.year === eDate.getFullYear() && m.monthIndex === eDate.getMonth())
+          if (target) target.exp += Number(e.amount)
+        })
+        
+        const maxVal = Math.max(...months.map(m => Math.max(m.rev, m.exp)), 1)
+        const chartData = months.map(m => ({
+          label: m.label,
+          rev: m.rev,
+          exp: m.exp,
+          revPct: Math.max(2, (m.rev / maxVal) * 90),
+          expPct: Math.max(2, (m.exp / maxVal) * 90)
+        }))
+        
+        // Compute dynamic system alerts
+        const leases = leaseRes.data || []
+        const nowTime = new Date().getTime()
+        const thirtyDaysFromNow = nowTime + (30 * 24 * 60 * 60 * 1000)
+        
+        const expiringLeasesCount = leases.filter(l => {
+          if (!l.end_date || l.status !== 'Active') return false
+          const expTime = new Date(l.end_date).getTime()
+          return expTime >= nowTime && expTime <= thirtyDaysFromNow
+        }).length
+        
+        const allMaint = maintRes.data || []
+        const activeMaintCount = allMaint.filter(m => m.status === 'Open' || m.status === 'In Progress').length
+        const unpaidExpCount = expData.filter(e => e.status === 'Pending').length
+        
+        const alertsData = [
+          { text: `${activeMaintCount} active maintenance requests pending`, level: activeMaintCount > 0 ? 'warning' : 'info' },
+          { text: `${vacant} vacant units generating no income`, level: vacant > 0 ? 'error' : 'success' },
+          { text: `${expiringLeasesCount} active leases expiring within 30 days`, level: expiringLeasesCount > 0 ? 'warning' : 'info' },
+          { text: `${unpaidExpCount} pending expense payments to settle`, level: unpaidExpCount > 0 ? 'warning' : 'success' },
+        ]
 
-      setStats({
-        properties: propertiesData.length,
-        portfolioValue,
-        totalUnits,
-        occupied,
-        vacant,
-        tenants: tenantRes.count || 0,
-        revenue: totalRev,
-        expenses: totalExp,
-        potentialRev,
-        lostRev,
-      })
-      setMaintenance(maintRes.data || [])
-      setLoading(false)
+        setStats({
+          properties: propertiesData.length,
+          portfolioValue,
+          totalUnits,
+          occupied,
+          vacant,
+          tenants: tenantRes.count || 0,
+          revenue: totalRev,
+          expenses: totalExp,
+          potentialRev,
+          lostRev,
+          chartData,
+          alertsData
+        })
+        setMaintenance(allMaint.slice(0, 4))
+      } catch (err) {
+        console.error("Dashboard initialization failure:", err)
+        setStats({
+          properties: 0, portfolioValue: 0, totalUnits: 0, occupied: 0, vacant: 0,
+          tenants: 0, revenue: 0, expenses: 0, potentialRev: 0, lostRev: 0,
+          chartData: [], alertsData: []
+        })
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [])
@@ -126,17 +202,15 @@ export default function Dashboard() {
             <span className="flex items-center gap-1 text-xs text-green-400"><ArrowUpRight size={12} /> Net Positive</span>
           </div>
           <div className="flex items-end gap-6 h-44">
-            {[
-              { label: 'Jun', rev: 62, exp: 25 }, { label: 'Jul', rev: 68, exp: 30 },
-              { label: 'Aug', rev: 72, exp: 28 }, { label: 'Sep', rev: 75, exp: 32 },
-              { label: 'Oct', rev: 78, exp: 27 }, { label: 'Nov', rev: 85, exp: 35 },
-            ].map((d, i) => (
+            {stats.chartData?.map((d: any, i: number) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
                 <div className="w-full flex gap-1 items-end h-36">
-                  <div className="flex-1 rounded-t-md bg-gradient-to-t from-[#00d4ff]/30 to-[#00d4ff]/70 group-hover:to-[#00d4ff]/90 transition-all duration-300 relative" style={{ height: `${d.rev}%` }}>
-                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-white/0 group-hover:text-[#00d4ff] transition-all whitespace-nowrap">{(d.rev * 15).toLocaleString()}K</div>
+                  <div className="flex-1 rounded-t-md bg-gradient-to-t from-[#00d4ff]/30 to-[#00d4ff]/70 group-hover:to-[#00d4ff]/90 transition-all duration-300 relative" style={{ height: `${d.revPct}%` }}>
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-white/0 group-hover:text-[#00d4ff] transition-all whitespace-nowrap">{(d.rev / 1000).toFixed(0)}K</div>
                   </div>
-                  <div className="flex-1 rounded-t-md bg-gradient-to-t from-red-500/20 to-red-500/50 group-hover:to-red-500/70 transition-all duration-300" style={{ height: `${d.exp}%` }} />
+                  <div className="flex-1 rounded-t-md bg-gradient-to-t from-red-500/20 to-red-500/50 group-hover:to-red-500/70 transition-all duration-300 relative" style={{ height: `${d.expPct}%` }}>
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-white/0 group-hover:text-red-400 transition-all whitespace-nowrap">{(d.exp / 1000).toFixed(0)}K</div>
+                  </div>
                 </div>
                 <span className="text-[10px] text-white/30">{d.label}</span>
               </div>
@@ -189,12 +263,7 @@ export default function Dashboard() {
         <div className="glass-card neon-glow p-6 card-enter stagger-4">
           <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Alerts</h3>
           <div className="space-y-3">
-            {[
-              { text: '3 leases expiring within 30 days', level: 'warning' },
-              { text: `${stats.vacant} vacant units generating no income`, level: 'error' },
-              { text: 'Insurance renewal due Dec 15', level: 'info' },
-              { text: `Collection rate: ${stats.revenue > 0 ? '96.5' : '0'}%`, level: 'success' },
-            ].map((alert, i) => (
+            {stats.alertsData?.map((alert: any, i: number) => (
               <div key={i} className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-200 hover:scale-[1.01] cursor-default ${
                 alert.level === 'error' ? 'bg-red-500/5 border-red-500/15' :
                 alert.level === 'warning' ? 'bg-yellow-500/5 border-yellow-500/15' :

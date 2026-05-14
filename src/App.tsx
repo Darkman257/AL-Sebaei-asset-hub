@@ -9,21 +9,24 @@ import Revenue from './pages/Revenue'
 import Documents from './pages/Documents'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import AuthGate from './components/AuthGate'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="assets" element={<Assets />} />
-        <Route path="tenants" element={<Tenants />} />
-        <Route path="maintenance" element={<Maintenance />} />
-        <Route path="expenses" element={<Expenses />} />
-        <Route path="revenue" element={<Revenue />} />
-        <Route path="documents" element={<Documents />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="settings" element={<Settings />} />
-      </Route>
-    </Routes>
+    <AuthGate>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="assets" element={<Assets />} />
+          <Route path="tenants" element={<Tenants />} />
+          <Route path="maintenance" element={<Maintenance />} />
+          <Route path="expenses" element={<Expenses />} />
+          <Route path="revenue" element={<Revenue />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </AuthGate>
   )
 }

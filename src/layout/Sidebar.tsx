@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Building2, Users, Wrench,
-  Receipt, TrendingUp, FileText, BarChart3, Settings
+  Receipt, TrendingUp, FileText, BarChart3, Settings, LogOut
 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 const links = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -25,8 +26,8 @@ export default function Sidebar() {
             <Building2 size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold neon-text text-[#00d4ff]">AL-Sebaei</h1>
-            <p className="text-[10px] text-white/40 uppercase tracking-widest">Asset Hub</p>
+            <h1 className="text-base font-bold neon-text text-[#00d4ff]">Asset Hub</h1>
+            <p className="text-[10px] text-white/40 uppercase tracking-widest">Portfolio Portal</p>
           </div>
         </div>
       </div>
@@ -49,7 +50,7 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
-      <div className="p-4 border-t border-white/5 m-3 rounded-xl bg-white/[0.02]">
+      <div className="p-4 border-t border-white/5 m-3 rounded-xl bg-white/[0.02] flex items-center justify-between group">
         <div className="flex items-center gap-3 px-2 py-1">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00d4ff] to-[#a855f7] shadow-[0_0_12px_rgba(0,212,255,0.3)]" />
           <div>
@@ -57,6 +58,13 @@ export default function Sidebar() {
             <p className="text-[10px] text-white/30">AL-Sebaei Group</p>
           </div>
         </div>
+        <button 
+          onClick={() => supabase.auth.signOut()}
+          className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-white/20 hover:text-red-400 rounded-lg transition-all duration-200 cursor-pointer"
+          title="Terminate Session"
+        >
+          <LogOut size={15} />
+        </button>
       </div>
     </aside>
   )
